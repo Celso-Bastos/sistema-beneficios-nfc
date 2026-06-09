@@ -1,0 +1,3 @@
+# TODO: Adicionar dependencias somente se o app local Python for necessario.
+# TODO: Confirmar modelo do leitor NFC antes de escolher bibliotecas.
+

@@ -1,0 +1,3 @@
+# TODO: Adicionar dependencias somente quando a API FastAPI for implementada.
+# TODO: Evitar bibliotecas desnecessarias no MVP.
+

@@ -1,0 +1,10 @@
+{
+  "name": "pequenas-cidades-nfc-frontend",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TODO: Base futura do frontend web do MVP Pequenas Cidades NFC.",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
+
