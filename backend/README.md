@@ -1,19 +1,37 @@
 # Backend
 
-TODO: Criar futuramente a API em Python FastAPI.
+API minima em FastAPI para a Fase 1 do MVP sistema-beneficios-nfc.
 
-## Responsabilidades Futuras
+Esta fase valida estrutura do backend, execucao local, deploy no Render,
+rota de saude e preparacao segura para variaveis de ambiente. Nao ha banco
+de dados, autenticacao, regras de negocio, NFC, dashboard ou frontend.
 
-- Receber cadastro de clientes.
-- Registrar tags NFC.
-- Vincular UID NFC a clientes.
-- Consultar cliente por UID.
-- Registrar leituras NFC para historico futuro.
+## Instalar
 
-## Observacoes
+```bash
+pip install -r requirements.txt
+```
 
-TODO: Nao ha API funcional nesta fase.
-TODO: Nao ha autenticacao nesta fase.
-TODO: Nao ha conexao real com banco nesta fase.
-TODO: Definir contratos de rotas antes da implementacao.
+## Rodar localmente
 
+```bash
+uvicorn app.main:app --reload
+```
+
+## Endpoints
+
+- `GET /`
+- `GET /health`
+
+## Variaveis de ambiente
+
+Use `.env.example` como referencia. Nao crie ou versione arquivos `.env`
+com credenciais reais.
+
+## Render
+
+Start Command:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```

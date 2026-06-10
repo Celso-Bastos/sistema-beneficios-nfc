@@ -1,3 +1,4 @@
-# TODO: Adicionar dependencias somente quando a API FastAPI for implementada.
-# TODO: Evitar bibliotecas desnecessarias no MVP.
-
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-dotenv
