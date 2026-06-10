@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "sistema-beneficios-nfc-api"
     APP_VERSION: str = "0.1.0"
     ENVIRONMENT: str = "development"
+    DATABASE_URL: str = ""
     ALLOWED_ORIGINS: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:3000",
@@ -28,6 +29,21 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
 
         return value
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def parse_database_url(cls, value: str | None) -> str:
+        if value is None:
+            return ""
+
+        return value.strip()
+
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        if self.DATABASE_URL.startswith("postgresql://"):
+            return self.DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
+        return self.DATABASE_URL
 
 
 @lru_cache

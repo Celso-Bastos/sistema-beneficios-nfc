@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.database import router as database_router
 from app.api.health import router as health_router
 from app.core.config import settings
 
@@ -25,3 +26,4 @@ def read_root() -> dict[str, str]:
 
 
 app.include_router(health_router)
+app.include_router(database_router)
