@@ -1,13 +1,29 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.clientes import router as clientes_router
 from app.api.database import router as database_router
 from app.api.health import router as health_router
 from app.api.nfc_tags import router as nfc_tags_router
 from app.core.config import settings
+from app.core.exception_handlers import (
+    http_exception_handler,
+    sqlalchemy_exception_handler,
+    unhandled_exception_handler,
+    validation_exception_handler,
+)
+from app.core.logging import configure_logging
+from app.core.middleware import OperationalMiddleware
 
+configure_logging()
 app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION)
+
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,6 +32,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+app.add_middleware(OperationalMiddleware)
 
 
 @app.get("/")

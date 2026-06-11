@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database.session import DatabaseSessionNotConfigured, get_db
+from app.core.rate_limit import rate_limit
 from app.schemas.nfc_tag import (
     NFCLeituraCreate,
     NFCLeituraResponse,
@@ -62,6 +63,7 @@ def list_nfc_tags(
 @router.post("/vincular", response_model=NFCMessageResponse)
 def vincular_nfc_tag(
     payload: NFCTagVincular,
+    _: None = Depends(rate_limit),
     db: Session = Depends(get_nfc_db),
 ) -> dict[str, str]:
     service.vincular(db, payload)
@@ -71,6 +73,7 @@ def vincular_nfc_tag(
 @router.get("/lookup/{uid}", response_model=NFCLookupResponse)
 def lookup_nfc_tag(
     uid: str,
+    _: None = Depends(rate_limit),
     db: Session = Depends(get_nfc_db),
 ) -> NFCLookupResponse:
     nfc_tag = service.lookup(db, uid)

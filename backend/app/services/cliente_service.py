@@ -5,13 +5,19 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.cliente import Cliente
+from app.repositories.audit_repository import AuditRepository
 from app.repositories.cliente_repository import ClienteRepository
 from app.schemas.cliente import ClienteCreate, ClienteUpdate
 
 
 class ClienteService:
-    def __init__(self, repository: ClienteRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: ClienteRepository | None = None,
+        audit_repository: AuditRepository | None = None,
+    ) -> None:
         self.repository = repository or ClienteRepository()
+        self.audit_repository = audit_repository or AuditRepository()
 
     def create(self, db: Session, payload: ClienteCreate) -> Cliente:
         data = payload.model_dump()
@@ -19,6 +25,13 @@ class ClienteService:
 
         try:
             cliente = self.repository.create(db, data)
+            db.flush()
+            self.audit_repository.create(
+                db,
+                event_type="cliente_criado",
+                entity="cliente",
+                entity_id=str(cliente.id),
+            )
             db.commit()
             db.refresh(cliente)
             return cliente
@@ -69,6 +82,12 @@ class ClienteService:
 
         try:
             cliente = self.repository.update(db, cliente, data)
+            self.audit_repository.create(
+                db,
+                event_type="cliente_alterado",
+                entity="cliente",
+                entity_id=str(cliente.id),
+            )
             db.commit()
             db.refresh(cliente)
             return cliente
@@ -86,6 +105,12 @@ class ClienteService:
 
         try:
             self.repository.soft_delete(cliente)
+            self.audit_repository.create(
+                db,
+                event_type="cliente_inativado",
+                entity="cliente",
+                entity_id=str(cliente.id),
+            )
             db.commit()
             return True
         except SQLAlchemyError:

@@ -2,32 +2,22 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.api.clientes import get_clientes_db
 from app.api.nfc_tags import get_nfc_db
-from app.database.base import Base
 from app.main import app
+from app.models.audit_log import AuditLog
 from app.models.leitura_nfc import LeituraNFC
 from app.schemas.nfc_tag import NFCTagCreate
 from app.utils.normalizers import normalize_uid
+from tests.utils import build_test_session
 
 
 @pytest.fixture()
 def client() -> Generator[TestClient, None, None]:
-    engine = create_engine(
-        "sqlite+pysqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    TestingSessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-    )
-    Base.metadata.create_all(bind=engine)
+    engine, TestingSessionLocal = build_test_session()
 
     def override_get_db() -> Generator[Session, None, None]:
         db = TestingSessionLocal()
@@ -43,7 +33,7 @@ def client() -> Generator[TestClient, None, None]:
         yield test_client
 
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 def test_normalize_uid_remove_espacos_e_uppercase() -> None:
@@ -104,6 +94,11 @@ def test_nfc_cadastro_vinculo_lookup_e_registro_leitura(client: TestClient) -> N
         assert len(leituras) == 1
         assert leituras[0].uid == "04A8B9C1"
         assert leituras[0].sucesso is True
+
+        audit_events = [event for event in db.scalars(select(AuditLog.event_type)).all()]
+        assert "cliente_criado" in audit_events
+        assert "nfc_criada" in audit_events
+        assert "nfc_vinculada" in audit_events
 
 
 def test_nfc_tag_pode_ser_inativada(client: TestClient) -> None:

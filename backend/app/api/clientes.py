@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database.session import DatabaseSessionNotConfigured, get_db
+from app.core.rate_limit import rate_limit
 from app.schemas.cliente import (
     ClienteCreate,
     ClienteListResponse,
@@ -35,6 +36,7 @@ def get_clientes_db() -> Generator[Session, None, None]:
 )
 def create_cliente(
     payload: ClienteCreate,
+    _: None = Depends(rate_limit),
     db: Session = Depends(get_clientes_db),
 ) -> ClienteResponse:
     return service.create(db, payload)

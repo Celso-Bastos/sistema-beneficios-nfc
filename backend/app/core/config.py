@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     ENVIRONMENT: str = "development"
     DATABASE_URL: str = ""
+    DATABASE_CONNECT_TIMEOUT_SECONDS: int = 5
+    RATE_LIMIT_REQUESTS: int = 100
+    RATE_LIMIT_WINDOW_SECONDS: int = 60
     ALLOWED_ORIGINS: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:3000",

@@ -24,6 +24,7 @@ uvicorn app.main:app --reload
 
 - `GET /`
 - `GET /health`
+- `GET /health/detailed`
 - `GET /database/status`
 - `POST /api/clientes`
 - `GET /api/clientes`
@@ -137,6 +138,17 @@ TODO: autenticacao e autorizacao serao obrigatorias antes de qualquer uso em
 producao real.
 
 Dividas tecnicas conhecidas estao documentadas em `docs/TECH_DEBT.md`.
+
+## Operacao e hardening
+
+A Fase 7 adiciona tratamento global de erros, logs estruturados, `X-Request-ID`,
+headers de seguranca, rate limit basico, auditoria operacional e health check
+detalhado.
+
+Documentos:
+
+- `docs/HARDENING.md`
+- `docs/RISK_ASSESSMENT.md`
 
 ## NFC Tags
 

@@ -2,28 +2,18 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.api.clientes import get_clientes_db
-from app.database.base import Base
 from app.main import app
+from app.models.audit_log import AuditLog
+from tests.utils import build_test_session
 
 
 @pytest.fixture()
 def client() -> Generator[TestClient, None, None]:
-    engine = create_engine(
-        "sqlite+pysqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    TestingSessionLocal = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-    )
-    Base.metadata.create_all(bind=engine)
+    engine, TestingSessionLocal = build_test_session()
 
     def override_get_db() -> Generator[Session, None, None]:
         db = TestingSessionLocal()
@@ -38,7 +28,7 @@ def client() -> Generator[TestClient, None, None]:
         yield test_client
 
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
 
 def test_clientes_crud_minimo(client: TestClient) -> None:
@@ -65,7 +55,8 @@ def test_clientes_crud_minimo(client: TestClient) -> None:
     )
     assert duplicate_response.status_code == 409
     assert duplicate_response.json() == {
-        "detail": "Já existe um cliente cadastrado com este CPF"
+        "error": True,
+        "message": "Já existe um cliente cadastrado com este CPF",
     }
 
     list_response = client.get("/api/clientes")
@@ -81,7 +72,8 @@ def test_clientes_crud_minimo(client: TestClient) -> None:
     empty_update_response = client.put(f"/api/clientes/{created['id']}", json={})
     assert empty_update_response.status_code == 400
     assert empty_update_response.json() == {
-        "detail": "Informe pelo menos um campo para atualização"
+        "error": True,
+        "message": "Informe pelo menos um campo para atualização",
     }
 
     update_response = client.put(
@@ -100,3 +92,11 @@ def test_clientes_crud_minimo(client: TestClient) -> None:
     second_delete_response = client.delete(f"/api/clientes/{created['id']}")
     assert second_delete_response.status_code == 200
     assert second_delete_response.json() == {"message": "Cliente já estava inativo"}
+
+    with next(client.app.dependency_overrides[get_clientes_db]()) as db:
+        audit_events = [event for event in db.scalars(select(AuditLog.event_type)).all()]
+        assert sorted(audit_events) == sorted([
+            "cliente_criado",
+            "cliente_alterado",
+            "cliente_inativado",
+        ])

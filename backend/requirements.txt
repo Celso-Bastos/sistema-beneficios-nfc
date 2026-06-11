@@ -8,3 +8,4 @@ alembic
 email-validator
 pytest
 httpx
+pytest-cov

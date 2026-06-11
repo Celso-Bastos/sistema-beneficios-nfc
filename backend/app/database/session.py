@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.core.config import settings
 
 connect_args = (
-    {"connect_timeout": 5}
+    {"connect_timeout": settings.DATABASE_CONNECT_TIMEOUT_SECONDS}
     if settings.sqlalchemy_database_url.startswith("postgresql")
     else {}
 )

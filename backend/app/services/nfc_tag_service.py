@@ -5,14 +5,20 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.nfc_tag import NFCTag
+from app.repositories.audit_repository import AuditRepository
 from app.repositories.nfc_tag_repository import NFCTagRepository
 from app.schemas.nfc_tag import NFCLeituraCreate, NFCTagCreate, NFCTagVincular
 from app.utils.normalizers import normalize_uid
 
 
 class NFCTagService:
-    def __init__(self, repository: NFCTagRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: NFCTagRepository | None = None,
+        audit_repository: AuditRepository | None = None,
+    ) -> None:
         self.repository = repository or NFCTagRepository()
+        self.audit_repository = audit_repository or AuditRepository()
 
     def create(self, db: Session, payload: NFCTagCreate) -> NFCTag:
         try:
@@ -21,6 +27,13 @@ class NFCTagService:
                 raise self._duplicated_uid()
 
             nfc_tag = self.repository.create(db, payload.uid)
+            db.flush()
+            self.audit_repository.create(
+                db,
+                event_type="nfc_criada",
+                entity="nfc_tag",
+                entity_id=str(nfc_tag.id),
+            )
             db.commit()
             db.refresh(nfc_tag)
             return nfc_tag
@@ -91,6 +104,12 @@ class NFCTagService:
                 )
 
             self.repository.vincular(nfc_tag, payload.cliente_id)
+            self.audit_repository.create(
+                db,
+                event_type="nfc_vinculada",
+                entity="nfc_tag",
+                entity_id=str(nfc_tag.id),
+            )
             db.commit()
         except HTTPException:
             raise
