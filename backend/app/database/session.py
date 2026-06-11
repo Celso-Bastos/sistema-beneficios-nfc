@@ -32,9 +32,13 @@ SessionLocal = (
 )
 
 
+class DatabaseSessionNotConfigured(RuntimeError):
+    pass
+
+
 def get_db() -> Generator[Session, None, None]:
     if SessionLocal is None:
-        raise RuntimeError("DATABASE_URL is not configured")
+        raise DatabaseSessionNotConfigured("DATABASE_URL is not configured")
 
     db = SessionLocal()
     try:

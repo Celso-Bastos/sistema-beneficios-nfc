@@ -5,3 +5,6 @@ python-dotenv
 sqlalchemy
 psycopg[binary]
 alembic
+email-validator
+pytest
+httpx
