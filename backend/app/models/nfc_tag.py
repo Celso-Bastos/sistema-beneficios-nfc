@@ -16,10 +16,10 @@ class NFCTag(Base):
         default=uuid.uuid4,
     )
     uid: Mapped[str] = mapped_column(String(128), unique=True, index=True, nullable=False)
-    cliente_id: Mapped[uuid.UUID] = mapped_column(
+    cliente_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("clientes.id"),
-        nullable=False,
+        nullable=True,
     )
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="ativa")
     created_at: Mapped[datetime] = mapped_column(

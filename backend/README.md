@@ -30,6 +30,13 @@ uvicorn app.main:app --reload
 - `GET /api/clientes/{cliente_id}`
 - `PUT /api/clientes/{cliente_id}`
 - `DELETE /api/clientes/{cliente_id}`
+- `POST /api/nfc-tags`
+- `GET /api/nfc-tags`
+- `GET /api/nfc-tags/{uid}`
+- `DELETE /api/nfc-tags/{id}`
+- `POST /api/nfc-tags/vincular`
+- `GET /api/nfc-tags/lookup/{uid}`
+- `POST /api/nfc-tags/registrar-leitura`
 
 ## Variaveis de ambiente
 
@@ -130,6 +137,14 @@ TODO: autenticacao e autorizacao serao obrigatorias antes de qualquer uso em
 producao real.
 
 Dividas tecnicas conhecidas estao documentadas em `docs/TECH_DEBT.md`.
+
+## NFC Tags
+
+A Fase 4 implementa cadastro, vinculo, consulta por UID e registro de leitura
+NFC. O leitor NFC e tratado como HID Keyboard; o backend recebe somente o UID
+como texto.
+
+Mais detalhes estao em `docs/API_NFC.md`.
 
 ## Render
 

@@ -23,3 +23,11 @@ def normalize_phone(value: str | None) -> str | None:
         return None
 
     return re.sub(r"[\s()+-]", "", normalized)
+
+
+def normalize_uid(value: str | None) -> str | None:
+    normalized = normalize_text(value)
+    if normalized is None:
+        return None
+
+    return re.sub(r"\s+", "", normalized).upper()
